@@ -43,10 +43,10 @@
 #define START_WRITE() do{sem[hash]->P();}while(0) //TODO
 #define END_WRITE() do{sem[hash]->V();}while(0) //TODO
 #elif defined P1_LOCK //using our implemented nachos lock. Your solution for Task 2
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
+#define START_READ() do{lck[hash]->Acquire();}while(0) //TODO
+#define END_READ() do{lck[hash]->Release();}while(0) //TODO
+#define START_WRITE() do{lck[hash]->Acquire();}while(0) //TODO
+#define END_WRITE() do{lck[hash]->Release();}while(0) //TODO
 #elif defined P1_RWLOCK //using our rwlock. Your solution for Task 3
 #define START_READ() do{}while(0) //TODO
 #define END_READ() do{}while(0) //TODO
