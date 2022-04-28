@@ -48,10 +48,10 @@
 #define START_WRITE() do{lck[hash]->Acquire();}while(0) //TODO
 #define END_WRITE() do{lck[hash]->Release();}while(0) //TODO
 #elif defined P1_RWLOCK //using our rwlock. Your solution for Task 3
-#define START_READ() do{}while(0) //TODO
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
+#define START_READ() rwlck[hash]->startRead(); //TODO
+#define END_READ() rwlck[hash]->doneRead(); //TODO
+#define START_WRITE() rwlck[hash]->startRead(); //TODO
+#define END_WRITE() rwlck[hash]->doneRead(); //TODO
 #else //else behave like NOLOCK (no option passed)
 #define START_READ() do{}while(0)
 #define END_READ() do{}while(0)
@@ -112,7 +112,7 @@ HashMap::HashMap() {
   //insert setup code here
   char rwlock_debug_name[] = "rwlock_debug";
   for (int i = 0; i < TABLE_SIZE; i++) {
-     rwlck[i] = new Condition(rwlock_debug_name);
+     rwlck[i] = new RWLock();
   }
 #endif
 }

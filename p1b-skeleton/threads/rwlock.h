@@ -8,8 +8,9 @@ private:
     	//Add  fields for  RWLock. Your solution to Task 3
     	//TODO
 
-		pthread_cond_t okToRead, okToWrite;
-		pthread_mutex_t lock;
+		Condition* okToRead;
+		Condition* okToWrite;
+		Lock* lock;
 		int AR, WR, AW, WW;
 public:
     	RWLock();

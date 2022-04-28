@@ -10,48 +10,53 @@
 //TODO
 
 RWLock::RWLock() { 
-    pthread_cond_init(&okToRead, 0);
-    pthread_cond_init(&okToWrite, 0);
-    pthread_mutex_init(&lock, 0);
+    char read_debug[] = "read_debug";
+    okToRead = new Condition(read_debug);
+    char write_debug[] = "write_debug";
+    okToWrite = new Condition(write_debug);
+    char lock_debug[] = "lock_debug";
+    lock = new Lock(lock_debug);
     AR, WR, AW, WW = 0,0,0,0;
 }
 RWLock::~RWLock() { 
-
+    delete okToRead;
+    delete okToWrite;
+    delete lock;
 }
 void RWLock::startRead() { 
-    pthread_mutex_lock(&lock);
+    lock->Acquire();
     while ((AW + WW) > 0) {
         WR++;
-        pthread_cond_wait(&okToRead, &lock);
+        okToRead->Wait(lock);
         WR--;
     }
     AR++;
-    pthread_mutex_unlock(&lock);
+    lock->Release();
 }
 void RWLock::doneRead() { 
-    pthread_mutex_lock(&lock);
+    lock->Acquire();
     AR--;
     if (AR == 0 && WW > 0)
-        pthread_cond_signal(&okToWrite);
-    pthread_mutex_unlock(&lock);
+        okToWrite->Signal(lock);
+    lock->Release();
 }
 void RWLock::startWrite() { 
-    pthread_mutex_lock(&lock);
+    lock->Acquire();
     while( (AW + AR) > 0){
         WW++;
-        pthread_cond_wait(&okToWrite, &lock);
+        okToWrite->Wait(lock);
         WW--;
     }
     AW++;
-    pthread_mutex_unlock(&lock);
+    lock->Release();
 }
 void RWLock::doneWrite() { 
-    pthread_mutex_lock(&lock);
+    lock->Acquire();
     AW--;
     if (WW > 0) {
-        pthread_cond_signal(&okToWrite);
+        okToWrite->Signal(lock);
     } else if (WR > 0) {
-        pthread_cond_broadcast(&okToRead);
+        okToRead->Broadcast(lock);
     }
-    pthread_mutex_unlock(&lock);
+    lock->Release();
 }

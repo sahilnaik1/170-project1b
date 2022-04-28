@@ -128,7 +128,7 @@ void Lock::Acquire() {
 void Lock::Release() { 
     IntStatus oldLevel = interrupt->SetLevel(IntOff);
 
-    while(!this->isHeldByCurrentThread());
+    while(!this->isHeldByCurrentThread()); // if thread does not have lock, then wait
 
     owner = NULL;
 
@@ -149,8 +149,42 @@ bool Lock::isHeldByCurrentThread() {
 // Your solution for Task 3
 // TODO
 
-Condition::Condition(char* debugName) { }
-Condition::~Condition() { }
-void Condition::Wait(Lock* conditionLock) { }
-void Condition::Signal(Lock* conditionLock) { }
-void Condition::Broadcast(Lock* conditionLock) { }
+Condition::Condition(char* debugName) {
+    name = debugName;
+    queue = new List;
+}
+Condition::~Condition() {
+    delete queue;
+ }
+void Condition::Wait(Lock* conditionLock) { 
+    IntStatus oldLevel = interrupt->SetLevel(IntOff); // disable interrupts
+	conditionLock->Release();                       // call Release on our condition Lock
+	queue->Append((void *)currentThread);           // add to waiting queue
+	currentThread->Sleep();                         // Sleep to wait
+	conditionLock->Acquire();                       // make thread ready
+	(void)interrupt->SetLevel(oldLevel);            // re-enable interrupts
+}
+    
+void Condition::Signal(Lock* conditionLock) { 
+    Thread *nextThread;                                 
+	IntStatus oldLevel = interrupt->SetLevel(IntOff);      // disable interrupts
+	if (conditionLock->isHeldByCurrentThread()) {          // only run if thread has lock
+		if (!queue->IsEmpty()) {                            //if waiting queue has thread, wake up one and remove from queue
+			nextThread = (Thread*)queue->Remove();
+			scheduler->ReadyToRun(nextThread);
+		}
+	}
+	(void)interrupt->SetLevel(oldLevel);                //re-enable interrupts
+}
+void Condition::Broadcast(Lock* conditionLock) { 
+    IntStatus oldLevel = interrupt->SetLevel(IntOff);   // disable interrupts
+    Thread *thread;
+    thread = (Thread *)queue->Remove();
+    while (thread!=NULL) {	                            // remove all threads waiting for the condition
+        if(conditionLock->isHeldByCurrentThread()) {   // only run if thread has lock
+            scheduler->ReadyToRun(thread);
+            thread = (Thread*)queue->Remove();
+        }
+    }
+    (void) interrupt->SetLevel(oldLevel);               //re-enable interrupts
+}
