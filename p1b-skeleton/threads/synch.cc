@@ -113,7 +113,9 @@ bool Lock::isHeldByCurrentThread() { }
 // Your solution for Task 3
 // TODO
 
-Condition::Condition(char* debugName) { }
+Condition::Condition(char* debugName) {
+    name = debugName;
+ }
 Condition::~Condition() { }
 void Condition::Wait(Lock* conditionLock) { }
 void Condition::Signal(Lock* conditionLock) { }
