@@ -38,10 +38,10 @@
 #define START_WRITE() do{}while(0)
 #define END_WRITE() do{}while(0)
 #elif defined P1_SEMAPHORE //using nachos semaphore. Your solution for Task 1
-#define START_READ() do{}while(0) //TODO  
-#define END_READ() do{}while(0) //TODO
-#define START_WRITE() do{}while(0) //TODO
-#define END_WRITE() do{}while(0) //TODO
+#define START_READ() do{sem[hash]->P();}while(0) //TODO  
+#define END_READ() do{sem[hash]->V();}while(0) //TODO
+#define START_WRITE() do{sem[hash]->P();}while(0) //TODO
+#define END_WRITE() do{sem[hash]->V();}while(0) //TODO
 #elif defined P1_LOCK //using our implemented nachos lock. Your solution for Task 2
 #define START_READ() do{}while(0) //TODO
 #define END_READ() do{}while(0) //TODO
@@ -98,10 +98,22 @@ HashMap::HashMap() {
     table[i] = NULL;
 #ifdef P1_SEMAPHORE
   //insert setup code here
+  char semaphore_debug_name[] = "semaphore_debug";
+  for (int i = 0; i < TABLE_SIZE; i++){
+     sem[i] = new Semaphore(semaphore_debug_name, 1);
+  }
 #elif defined P1_LOCK
   //insert setup code here
+  char lock_debug_name[] = "lock_debug";
+  for (int i = 0; i < TABLE_SIZE; i++) {
+     lck[i] = new Lock(lock_debug_name);
+  }
 #elif defined P1_RWLOCK
   //insert setup code here
+  char rwlock_debug_name[] = "rwlock_debug";
+  for (int i = 0; i < TABLE_SIZE; i++) {
+     rwlck[i] = new Condition(rwlock_debug_name);
+  }
 #endif
 }
 
